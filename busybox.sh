@@ -11,8 +11,8 @@ cd src
 
     echo  '-- compiling the kernel --'
     cd linux-5.15.132
-       make defconfig
-       make -j8 || exit
+        make defconfig
+        make -j8 || exit
     cd ..
 
     echo '-- downloading busybox --' 
