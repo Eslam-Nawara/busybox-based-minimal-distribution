@@ -1,40 +1,44 @@
 #!/bin/bash
 
+BUSYBOX_VERSION=1.36.1
+KERNEL_VERSION=5.15.132
+KERNEL_MAJOR=$(echo $KERNEL_VERSION | sed 's/\([0-9]*\)[^0-9].*/\1/')
+
 mkdir -p src
 pushd src
 
     echo '-- downloading linux kernel --'
-    wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.132.tar.xz
+    wget https://mirrors.edge.kernel.org/pub/linux/kernel/v$KERNEL_MAJOR.x/linux-$KERNEL_VERSION.tar.xz
 
     echo '-- extracting linux kernal --'
-    tar -xf linux-5.15.132.tar.xz
+    tar -xf linux-$KERNEL_VERSION.tar.xz
 
     echo  '-- compiling the kernel --'
-    pushd linux-5.15.132
+    pushd linux-$KERNEL_VERSION
         make defconfig
         make -j8 || exit
     popd 
 
     echo '-- downloading busybox --' 
-    wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
+    wget https://busybox.net/downloads/busybox-$BUSYBOX_VERSION.tar.bz2
 
     echo '-- extracting busybox --'
-    tar -xf busybox-1.36.1.tar.bz2
+    tar -xf busybox-$BUSYBOX_VERSION.tar.bz2
     
     echo '-- building busybox in static mode --'
-    pushd busybox-1.36.1
+    pushd busybox-$BUSYBOX_VERSION
         make defconfig
         echo 'CONFIG_STATIC=y' >> .config
         make -j8 || exit
     popd 
 popd
 
-cp src/linux-5.15.132/arch/x86_64/boot/bzImage ./
+cp src/linux-$KERNEL_VERSION/arch/x86_64/boot/bzImage ./
 
 mkdir -p initrd 
 pushd initrd || exit
     mkdir -p bin dev proc sys
-    ./../src/busybox-1.36.1/busybox --install bin
+    ./../src/busybox-$BUSYBOX_VERSION/busybox --install bin
 
     echo '#!/bin/sh' > init
     echo 'mount -t sysfs sysfs /sys' >> init
